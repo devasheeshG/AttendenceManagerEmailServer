@@ -10,8 +10,6 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    # gcc \
-    # libpq-dev \
     tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
@@ -26,7 +24,10 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
 # Copy project
-# COPY . /app/
+COPY . /app/
 
-# Run the application
-# CMD ["python", "-m", "app.main"]
+# Make entrypoint script executable
+RUN chmod +x /app/entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]

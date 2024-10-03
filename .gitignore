@@ -8,3 +8,4 @@ poetry.lock
 venv/
 get_prompt.py
 prompt.txt
+app.log

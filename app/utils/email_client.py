@@ -16,27 +16,34 @@ class EmailService:
     def __init__(self):
         credential = AzureKeyCredential(settings.ACS_KEY)
         self.client = EmailClient(settings.ACS_ENDPOINT, credential)
+        self.admin_emails = settings.ADMIN_EMAILS.split(',')
 
     def send_email(self, to_email: str, subject: str, content: str):
-        try:
-            message = {
-                "senderAddress": settings.ACS_EMAIL,
-                "recipients": {
-                    "to": [{"address": to_email}],
-                },
-                "content": {
-                    "subject": subject,
-                    "plainText": content,
+        max_retries = 5
+        for attempt in range(max_retries):
+            try:
+                message = {
+                    "senderAddress": settings.ACS_EMAIL,
+                    "recipients": {
+                        "to": [{"address": to_email}],
+                    },
+                    "content": {
+                        "subject": subject,
+                        "plainText": content,
+                    }
                 }
-            }
 
-            poller = self.client.begin_send(message)
-            result = poller.result()
+                poller = self.client.begin_send(message)
+                result = poller.result()
 
-            logger.info(f"Email sent successfully to {to_email}. Message ID: {result.id}")
-        except Exception as e:
-            logger.error(f"Failed to send email to {to_email}. Error: {str(e)}")
-            # raise
+                logger.info(f"Email sent successfully to {to_email}. Message ID: {result['id']}")
+                break
+            except Exception as e:
+                logger.error(f"Attempt {attempt + 1} failed to send email to {to_email}. Error: {str(e)}")
+                if attempt == max_retries - 1:
+                    logger.error(f"All {max_retries} attempts failed to send email to {to_email}.")
+                    # Optionally, you can raise the exception here if you want to handle it further up the call stack
+                    # raise
 
     def send_attendance_notification(
         self, 
@@ -54,30 +61,30 @@ class EmailService:
             
             content = (
                 f"Hello, {name}\n\n"
-                f"You have been marked present for {attendance_data.subject_name}.\n"
+                f"You have been marked present for {change} in {attendance_data.subject_name}.\n"
                 f"Total Hours: {attendance_data.total_hours}\n"
                 f"Present Hours: {attendance_data.present_hours}\n"
                 f"Absent Hours: {attendance_data.absent_hours}\n"
                 f"Percentage: {attendance_data.percentage}\n\n"
-                f"Change: +{change} hours"
+                # f"Change: +{change} hours"
             )
         
         else:
             content = (
                 f"Hello, {name}\n\n"
-                f"You have been marked absent for {attendance_data.subject_name}.\n"
+                f"You have been marked absent for {change} in {attendance_data.subject_name}.\n"
                 f"Total Hours: {attendance_data.total_hours}\n"
                 f"Present Hours: {attendance_data.present_hours}\n"
                 f"Absent Hours: {attendance_data.absent_hours}\n"
                 f"Percentage: {attendance_data.percentage}\n\n"
-                f"Change: -{change} hours"
+                # f"Change: -{change} hours"
             )
         
         self.send_email(email, subject, content)
         logger.info(f"Notification sent successfully to {email}")
 
-    def send_boot_notification(self, email: str):
-        logger.info(f"Sending boot notification to {email}")
+    def send_boot_notification(self):
+        logger.info("Sending boot notification to admin users")
 
         subject = "Attendance Monitoring Service Started"
         content = (
@@ -85,5 +92,21 @@ class EmailService:
             "This is to notify you that the Attendance Monitoring Service has started successfully."
         )
 
-        self.send_email(email, subject, content)
-        logger.info(f"Boot notification sent successfully to {email}")
+        for admin_email in self.admin_emails:
+            self.send_email(admin_email, subject, content)
+        logger.info("Boot notification sent successfully to admin users")
+
+    def send_error_notification(self, error_message: str, stack_trace: str):
+        logger.info("Sending error notification to admin users")
+
+        subject = "Error in Attendance Monitoring Service"
+        content = (
+            f"Hello, Admin\n\n"
+            f"An error occurred in the Attendance Monitoring Service:\n\n"
+            f"Error Message: {error_message}\n\n"
+            f"Stack Trace:\n{stack_trace}"
+        )
+
+        for admin_email in self.admin_emails:
+            self.send_email(admin_email, subject, content)
+        logger.info("Error notification sent successfully to admin users")

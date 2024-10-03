@@ -1,8 +1,16 @@
+version: '3.8'
+
 services:
   attendance-manager-email-server:
     build: .
-    command: python -m app.main
+    command: ["/app/entrypoint.sh"]
     volumes:
       - .:/app
     env_file:
       - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     
     # Application Configuration
     UPDATE_INTERVAL: int
+    
+    # Admin Emails
+    ADMIN_EMAILS: str
 
     class Config:
         env_file = ".env"
