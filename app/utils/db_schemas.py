@@ -25,29 +25,30 @@ class User(DatabaseBase):
         CheckConstraint("length(username) == 6", name='check_username_length'),
     )
 
-class Subject(DatabaseBase):
-    __tablename__ = "subjects"
+# class Subject(DatabaseBase):
+#     __tablename__ = "subjects"
 
-    id = Column(UUID(as_uuid=True), server_default=text("uuid_generate_v4()"), nullable=False)
-    subject_code = Column(String, unique=True, index=True)
-    subject_name = Column(String, nullable=False)
-    alias = Column(String)
+#     id = Column(UUID(as_uuid=True), server_default=text("uuid_generate_v4()"), nullable=False)
+#     subject_code = Column(String, unique=True, index=True)
+#     subject_name = Column(String, nullable=False)
+#     alias = Column(String)
 
 class Attendance(DatabaseBase):
     __tablename__ = "attendance"
 
     id = Column(UUID(as_uuid=True), server_default=text("uuid_generate_v4()"), nullable=False)
     user_id = Column(UUID(as_uuid=True), nullable=False)
-    subject_id = Column(UUID(as_uuid=True), nullable=False)
+    subject_code = Column(String, nullable=False)
+    subject_name = Column(String, nullable=False)
     max_hours = Column(Integer, nullable=False)
     attended_hours = Column(Integer, nullable=False)
     absent_hours = Column(Integer, nullable=False)
     total_percentage = Column(Float, nullable=False)
-    
-    subject = relationship("Subject", backref="attendance")
+
+    # subject = relationship("Subject", backref="attendance")
     user = relationship("User", backref="attendance")
-    
+
     __table_args__ = (
         ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-        ForeignKeyConstraint(['subject_id'], ['subjects.id'], ondelete='CASCADE'),
+        # ForeignKeyConstraint(['subject_id'], ['subjects.id'], ondelete='CASCADE'),
     )
