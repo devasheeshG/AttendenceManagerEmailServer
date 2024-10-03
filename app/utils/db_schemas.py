@@ -23,7 +23,7 @@ class User(DatabaseBase):
     
     __table_args__ = (
         CheckConstraint("email ~ '^[^@]+@[^@]+\\.[^@]+$'", name='check_email_format'),
-        CheckConstraint("length(username) == 6", name='check_username_length'),
+        CheckConstraint("length(username) = 6", name='check_username_length'),
     )
 
 # class Subject(DatabaseBase):

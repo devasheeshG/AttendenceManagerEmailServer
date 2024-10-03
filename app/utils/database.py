@@ -23,11 +23,11 @@ Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Create the base class
 DatabaseBase = declarative_base()
 
-@lru_cache()
-def get_db():
-    """Get Database Session."""
-    db = Session()
-    try:
-        yield db
-    finally:
-        db.close()
+# @lru_cache()
+# def get_db():
+#     """Get Database Session."""
+#     db = Session()
+#     try:
+#         yield db
+#     finally:
+#         db.close()

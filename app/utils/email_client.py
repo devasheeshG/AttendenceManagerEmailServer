@@ -20,7 +20,7 @@ class EmailService:
     def send_email(self, to_email: str, subject: str, content: str):
         try:
             message = {
-                "senderAddress": settings.AZURE_SENDER_EMAIL,
+                "senderAddress": settings.ACS_EMAIL,
                 "recipients": {
                     "to": [{"address": to_email}],
                 },
@@ -33,16 +33,57 @@ class EmailService:
             poller = self.client.begin_send(message)
             result = poller.result()
 
-            logger.info(f"Email sent successfully to {to_email}. Message ID: {result.message_id}")
+            logger.info(f"Email sent successfully to {to_email}. Message ID: {result.id}")
         except Exception as e:
             logger.error(f"Failed to send email to {to_email}. Error: {str(e)}")
-            raise
+            # raise
 
     def send_attendance_notification(
         self, 
-        to_email: str,
-        type: Literal['present', 'absent'],
-        data: AttendanceRecord,
+        name: str,
+        email: str,
+        notification_type: Literal['present', 'absent'],
+        attendance_data: AttendanceRecord,
+        change: int,
     ):
         # Compose the email content
-        pass
+        logger.info(f"Sending {notification_type} notification to {email}")
+
+        subject = f"Attendance Notification: {attendance_data.subject_name}"
+        if notification_type == 'present':
+            
+            content = (
+                f"Hello, {name}\n\n"
+                f"You have been marked present for {attendance_data.subject_name}.\n"
+                f"Total Hours: {attendance_data.total_hours}\n"
+                f"Present Hours: {attendance_data.present_hours}\n"
+                f"Absent Hours: {attendance_data.absent_hours}\n"
+                f"Percentage: {attendance_data.percentage}\n\n"
+                f"Change: +{change} hours"
+            )
+        
+        else:
+            content = (
+                f"Hello, {name}\n\n"
+                f"You have been marked absent for {attendance_data.subject_name}.\n"
+                f"Total Hours: {attendance_data.total_hours}\n"
+                f"Present Hours: {attendance_data.present_hours}\n"
+                f"Absent Hours: {attendance_data.absent_hours}\n"
+                f"Percentage: {attendance_data.percentage}\n\n"
+                f"Change: -{change} hours"
+            )
+        
+        self.send_email(email, subject, content)
+        logger.info(f"Notification sent successfully to {email}")
+
+    def send_boot_notification(self, email: str):
+        logger.info(f"Sending boot notification to {email}")
+
+        subject = "Attendance Monitoring Service Started"
+        content = (
+            "Hello, Admin\n\n"
+            "This is to notify you that the Attendance Monitoring Service has started successfully."
+        )
+
+        self.send_email(email, subject, content)
+        logger.info(f"Boot notification sent successfully to {email}")

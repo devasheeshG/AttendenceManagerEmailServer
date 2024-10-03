@@ -7,15 +7,14 @@ from PIL import Image as PILImage
 import pandas as pd
 import pytesseract
 import httpx
-import ast
-from sqlalchemy.orm import Session
+from typing import List
 
 from app.logger import get_logger
 from app.config import get_settings
-from app.utils.db_schemas import Attendance
+from app.utils.models import AttendanceRecord
 
 settings = get_settings()
-logger = get_logger(__name__)
+logger = get_logger()
 
 SRM_STUDENT_PORTAL_URI = "https://sp.srmist.edu.in/srmiststudentportal/students/loginManager/youLogin.jsp"
 SRM_STUDENT_PORTAL_GET_CAPTCHA_URI = "https://sp.srmist.edu.in/srmiststudentportal/captchas"
@@ -25,7 +24,7 @@ class AttendanceManager:
     def __init__(self, username: str, password: str) -> None:
         self.username = username
         self.password = password
-        self.client = httpx.AsyncClient()
+        self.client = httpx.AsyncClient(timeout=30.0)
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
         }
@@ -77,7 +76,7 @@ class AttendanceManager:
             logger.error(f"Error during login for user: {self.username}. Error: {str(e)}")
             raise
 
-    async def get_attendance_details(self) -> pd.DataFrame:
+    async def get_attendance_details(self) -> List[AttendanceRecord]:
         """Get main Attendance Table."""
         try:
             response = await self.client.post(ATTENDANCE_PAGE_URI, headers=self.headers)
@@ -90,38 +89,24 @@ class AttendanceManager:
             attendance_df = pd.read_html(StringIO(str(attendance_table)))[0]
 
             # Remove Unwanted Subject Codes
-            blacklist_codes = ["CL", "Total"]
+            blacklist_codes = ["Total"]
             attendance_df = attendance_df[~attendance_df["Code"].isin(blacklist_codes)]
             logger.info(f"Successfully retrieved attendance details for user: {self.username}")
             
-            return ast.literal_eval(attendance_df.to_json(orient="records"))
+            return [
+                AttendanceRecord(
+                    subject_name=row["Description"],
+                    subject_code=row["Code"],
+                    total_hours=int(row["Max. hours"]),
+                    present_hours=int(row["Att. hours"]),
+                    absent_hours=int(row["Absent hours"]),
+                    percentage=float(row["Total Percentage"])
+                )
+                for _, row in attendance_df.iterrows()
+            ]
         
         except Exception as e:
             logger.error(f"Error retrieving attendance details for user: {self.username}. Error: {str(e)}")
-            raise
-
-    async def update_attendance_db(self, db: Session, user_id: int) -> None:
-        """Update attendance information in the database."""
-        try:
-            attendance_data = await self.get_attendance_details()
-            
-            for data in attendance_data:
-                attendance = Attendance(
-                    user_id=user_id,
-                    subject_code=data["Code"],
-                    subject_name=data["Description"],
-                    max_hours=data["Max. hours"],
-                    attended_hours=data["Att. hours"],
-                    absent_hours=data["Absent hours"],
-                    total_percentage=data["Total Percentage"]
-                )
-                db.merge(attendance)
-            
-            db.commit()
-            logger.info(f"Successfully updated attendance in database for user: {self.username}")
-        except Exception as e:
-            db.rollback()
-            logger.error(f"Error updating attendance in database for user: {self.username}. Error: {str(e)}")
             raise
 
     async def close(self) -> None:

@@ -1,0 +1,8 @@
+services:
+  attendance-manager-email-server:
+    build: .
+    command: python -m app.main
+    volumes:
+      - .:/app
+    env_file:
+      - .env

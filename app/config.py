@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ACS_ENDPOINT: str
     
     # Application Configuration
-    UPDATE_INTERVAL: int = 600  # 10 minutes in seconds
+    UPDATE_INTERVAL: int
 
     class Config:
         env_file = ".env"
