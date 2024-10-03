@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "attendencemanager-email-server"
+version = "0.1.0"
+description = "This sends an email to registered user when they are marked absent in any period by monitoring their student portal."
+authors = ["Devasheesh Mishra <devasheeshmishra4@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
