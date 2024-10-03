@@ -12,7 +12,7 @@ settings = get_settings()
 # access to the values within the .ini file in use.
 config = context.config
 config.set_main_option(
-    "sqlalchemy.url", settings.get_postgres_uri(settings.POSTGRES_DB)
+    "sqlalchemy.url", settings.get_postgres_uri()
 )
 
 # Interpret the config file for Python logging.

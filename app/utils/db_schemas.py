@@ -3,7 +3,7 @@
 
 import enum
 from app.utils.database import DatabaseBase
-from sqlalchemy import Column, ForeignKeyConstraint, Integer, String, Float, CheckConstraint, Enum, UUID, text
+from sqlalchemy import Column, ForeignKeyConstraint, Integer, PrimaryKeyConstraint, String, Float, CheckConstraint, Enum, UUID, text
 from sqlalchemy.orm import relationship
 
 class NotificationLevel(enum.Enum):
@@ -14,7 +14,8 @@ class NotificationLevel(enum.Enum):
 class User(DatabaseBase):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), server_default=text("uuid_generate_v4()"), nullable=False)
+    id = Column(UUID(as_uuid=True), server_default=text("uuid_generate_v4()"), nullable=False, primary_key=True)
+    name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
@@ -36,7 +37,6 @@ class User(DatabaseBase):
 class Attendance(DatabaseBase):
     __tablename__ = "attendance"
 
-    id = Column(UUID(as_uuid=True), server_default=text("uuid_generate_v4()"), nullable=False)
     user_id = Column(UUID(as_uuid=True), nullable=False)
     subject_code = Column(String, nullable=False)
     subject_name = Column(String, nullable=False)
@@ -51,4 +51,5 @@ class Attendance(DatabaseBase):
     __table_args__ = (
         ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
         # ForeignKeyConstraint(['subject_id'], ['subjects.id'], ondelete='CASCADE'),
+        PrimaryKeyConstraint('user_id', 'subject_code', name='attendance_pk'),
     )
