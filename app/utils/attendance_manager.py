@@ -68,7 +68,10 @@ class AttendanceManager:
             # status should be `302` because after successful login it redirects to another page 
             if response.status_code != 302:
                 logger.error(f"Login Failed for user: {self.username}. Status Code: {response.status_code}")
-                raise ConnectionError("SRM Student Portal is Down or Login Failed")
+                # TODO: This is temporary fix, server does not return 302 status code in experimental mode
+                # Maybe we are doing something wrong, need to investigate
+                await self.login()
+                # raise ConnectionError("SRM Student Portal is Down or Login Failed")
             
             logger.info(f"Successfully logged in for user: {self.username}")
         

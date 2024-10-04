@@ -3,6 +3,7 @@ version: '3.8'
 services:
   attendance-manager-email-server:
     build: .
+    image: attendance-manager-email-server:latest
     command: ["/app/entrypoint.sh"]
     volumes:
       - .:/app
