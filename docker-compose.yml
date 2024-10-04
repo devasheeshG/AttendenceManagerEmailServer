@@ -4,6 +4,7 @@ services:
   attendance-manager-email-server:
     build: .
     image: attendance-manager-email-server:latest
+    container_name: attendance-manager-email-server
     command: ["/app/entrypoint.sh"]
     volumes:
       - .:/app
@@ -15,3 +16,9 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - custom_bridge_network
+
+networks:
+  custom_bridge_network:
+    external: true

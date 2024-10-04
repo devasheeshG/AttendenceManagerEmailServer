@@ -61,7 +61,7 @@ class EmailService:
             
             content = (
                 f"Hello, {name}\n\n"
-                f"You have been marked present for {change} in {attendance_data.subject_name}.\n"
+                f"You have been marked present for {change} periods in {attendance_data.subject_name}.\n"
                 f"Total Hours: {attendance_data.total_hours}\n"
                 f"Present Hours: {attendance_data.present_hours}\n"
                 f"Absent Hours: {attendance_data.absent_hours}\n"
@@ -72,14 +72,14 @@ class EmailService:
         else:
             content = (
                 f"Hello, {name}\n\n"
-                f"You have been marked absent for {change} in {attendance_data.subject_name}.\n"
+                f"You have been marked absent for {change} periods in {attendance_data.subject_name}.\n"
                 f"Total Hours: {attendance_data.total_hours}\n"
                 f"Present Hours: {attendance_data.present_hours}\n"
                 f"Absent Hours: {attendance_data.absent_hours}\n"
                 f"Percentage: {attendance_data.percentage}\n\n"
                 # f"Change: -{change} hours"
             )
-        
+
         self.send_email(email, subject, content)
         logger.info(f"Notification sent successfully to {email}")
 
