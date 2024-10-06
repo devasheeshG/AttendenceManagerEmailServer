@@ -3,17 +3,25 @@ services:
     build: .
     image: attendance-manager-email-server:latest
     container_name: attendance-manager-email-server
+    restart: unless-stopped
+
     command: ["uvicorn", "app.main:app", "--log-level", "debug", "--host", "0.0.0.0", "--port", "8000"]
+    
     volumes:
       - .:/app
-    env_file:
-      - .env
-    restart: unless-stopped
+    
+    ports:
+      - "9000:8000"
+    
+    # env_file:
+    #   - .env
+    
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
+    
     networks:
       - custom_bridge_network
 
