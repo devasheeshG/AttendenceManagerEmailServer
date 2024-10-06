@@ -3,7 +3,7 @@ services:
     build: .
     image: attendance-manager-email-server:latest
     container_name: attendance-manager-email-server
-    command: ["/app/entrypoint.sh"]
+    command: ["uvicorn", "app.main:app", "--log-level", "debug", "--host", "0.0.0.0", "--port", "8000"]
     volumes:
       - .:/app
     env_file:

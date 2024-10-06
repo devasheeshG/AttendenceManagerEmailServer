@@ -115,4 +115,3 @@ class AttendanceManager:
     async def close(self) -> None:
         """Close HTTP client."""
         await self.client.aclose()
-        

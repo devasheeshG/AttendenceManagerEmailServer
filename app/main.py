@@ -109,7 +109,7 @@ async def update_all_users():
     db = DbSessionLocal()
     try:
         users = db.query(User).all()
-        logger.debug(f"Updating attendance for {len(users)} users")
+        logger.info(f"Updating attendance for {len(users)} users")
         tasks = [update_attendance(db, user) for user in users]
         await asyncio.gather(*tasks)
 
@@ -183,6 +183,6 @@ async def trigger_update(background_tasks: BackgroundTasks):
     background_tasks.add_task(update_all_users)
     return {"message": "Update triggered"}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
