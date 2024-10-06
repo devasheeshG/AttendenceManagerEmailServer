@@ -178,10 +178,10 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-# @app.post("/trigger-update")
-# async def trigger_update(background_tasks: BackgroundTasks):
-#     background_tasks.add_task(update_all_users)
-#     return {"message": "Update triggered"}
+@app.post("/trigger-update")
+async def trigger_update(background_tasks: BackgroundTasks):
+    background_tasks.add_task(update_all_users)
+    return {"message": "Update triggered"}
 
 if __name__ == "__main__":
     import uvicorn
