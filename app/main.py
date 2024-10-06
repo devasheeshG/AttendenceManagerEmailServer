@@ -39,13 +39,6 @@ async def update_attendance(db: Session, user: User):
                 new_attended = new_data.present_hours - old_attendance.attended_hours
                 new_absent = new_data.absent_hours - old_attendance.absent_hours
 
-                # Update database
-                old_attendance.max_hours = new_data.total_hours
-                old_attendance.attended_hours = new_data.present_hours
-                old_attendance.absent_hours = new_data.absent_hours
-                old_attendance.total_percentage = new_data.percentage
-                db.commit()
-
                 # Send notifications based on changes and user preferences
                 if new_attended > 0 and (user.notification_level == NotificationLevel.ALL or user.notification_level == NotificationLevel.PRESENT_ONLY):
                     email_service.send_attendance_notification(
@@ -63,20 +56,15 @@ async def update_attendance(db: Session, user: User):
                         attendance_data=new_data,
                         change=new_absent
                     )
-            else:
-                # New subject, add to database
-                new_attendance = Attendance(
-                    user_id=user.id,
-                    subject_code=new_data.subject_code,
-                    subject_name=new_data.subject_name,
-                    max_hours=new_data.total_hours,
-                    attended_hours=new_data.present_hours,
-                    absent_hours=new_data.absent_hours,
-                    total_percentage=new_data.percentage
-                )
-                db.add(new_attendance)
+                
+                # Update database
+                old_attendance.max_hours = new_data.total_hours
+                old_attendance.attended_hours = new_data.present_hours
+                old_attendance.absent_hours = new_data.absent_hours
+                old_attendance.total_percentage = new_data.percentage
                 db.commit()
-
+                
+            else:
                 # Send notifications based on changes and user preferences
                 if new_data.present_hours > 0 and (user.notification_level == NotificationLevel.ALL or user.notification_level == NotificationLevel.PRESENT_ONLY):
                     email_service.send_attendance_notification(
@@ -94,6 +82,19 @@ async def update_attendance(db: Session, user: User):
                         attendance_data=new_data,
                         change=new_data.absent_hours
                     )
+                    
+                # New subject, add to database
+                new_attendance = Attendance(
+                    user_id=user.id,
+                    subject_code=new_data.subject_code,
+                    subject_name=new_data.subject_name,
+                    max_hours=new_data.total_hours,
+                    attended_hours=new_data.present_hours,
+                    absent_hours=new_data.absent_hours,
+                    total_percentage=new_data.percentage
+                )
+                db.add(new_attendance)
+                db.commit()
 
         logger.info(f"Successfully updated attendance for user: {user.username}")
     
