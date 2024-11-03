@@ -3,6 +3,7 @@ services:
     build: .
     image: attendance-manager-email-server:latest
     container_name: attendance-manager-email-server
+    hostname: attendance-manager-email-server
     restart: unless-stopped
 
     command: ["uvicorn", "app.main:app", "--log-level", "debug", "--host", "0.0.0.0", "--port", "8000"]
